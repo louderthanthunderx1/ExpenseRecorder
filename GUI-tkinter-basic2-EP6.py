@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 GUI = Tk() # กำหนดให้ GUI คือ tkinter
-GUI.title("โปรแกรมบันทึกค่าใช้จ่าย By Theeraphan's")
+GUI.title("โปรแกรมบันทึกค่าใช้จ่าย v.1.0 By Theeraphan's")
 GUI.geometry('600x800+500+50')
 # กำหนดขนาด กว้่าง x ยาว +ห่างจากแกน x ของจอ + ห่างจากแกน y ของจอ
 
@@ -28,6 +28,7 @@ filemenu.add_command(label='Export to Googlesheet')
 
 # help
 def About():
+	print('About Menu')
 	messagebox.showinfo('About','สวัสดีครับ โปรแกรมนี้คือโปรแกรมบันทึกข้อมูลรายจ่าย \nสนใจบริจาคเราไหม? ขอแค่ 1 BTC ก็พอแล้ว\nBTC address: x0abc')
 
 helpmenu = Menu(menubar,tearoff=0)
