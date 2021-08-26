@@ -4,6 +4,44 @@ from tkinter import ttk, messagebox # ttk is theme of Tk
 import csv
 from datetime import datetime
 
+##############DATA BASE################
+import sqlite3
+
+# สร้าง database 
+conn = sqlite3.connect('expense.db')
+# สร้างตัวดำเนินการ (อยากได้อะไรใช้งานตัวนี้ได้เลย)
+c = conn.cursor()
+
+#สร้าง table ด้วยภาษา SQL #ใช้ตัวใหญ๋
+'''
+#####ออกแบบตารางก่อนค่อยสร้าง database #####
+'รหัสรายการ (transactionid) TEXT',
+'วัน-เวลา (datetime)'TEXT,
+'รายการ(title)'TEXT,
+'ค่าใช้จ่าย(expense)'REAL (float),
+'จำนวน (quantiy)'INTEGER,
+'รวม(total) REAL (float)'
+
+'''
+c.execute("""CREATE TABLE IF NOT EXISTS expenselist (
+				ID INTEGER PRIMARY KEY AUTOINCREMENT,
+				transactionid TEXT,
+				datetime TEXT,
+				title TEXT,
+				expense REAL,
+				quantity INTEGER,
+				total REAL
+		)""") #สร้าง Table ขึ้นมาชื่อ expenselist
+
+def insert_expense(transactionid,datetime,title,expense,quantity,total):
+	ID = None
+	with conn:
+		c.execute("""INSERT INTO expenselist VALUES (?,?,?,?,?,?,?)""",
+			(ID,transactionid,datetime,title,expense,quantity,total))
+		conn.commit() # การบันทึกข้อมูลลงในฐานข้อมูล ถ้าไม่รันตัวนี้จะไม่บันทึก
+		print('Insert Success!')
+
+#############GUI#################
 
 GUI = Tk() # กำหนดให้ GUI คือ tkinter
 GUI.title("โปรแกรมบันทึกค่าใช้จ่าย v.1.0 By Theeraphan's")
@@ -105,7 +143,7 @@ def save(event=None):
 
 
 	try: # เป็นการสั่งให้ทดลองทำสิ่งที่อยู่ใน Try ถ้าทำแล้วไม่มีปัญหาก็ รันได้
-		total = int(price) * int(quantity) #ต้องแปลงเป็น int ถึงจะ คูณได้
+		total = float(price) * float(quantity) #ต้องแปลงเป็น int ถึงจะ คูณได้
 		# ถ้าเป็น float จะใส่ จุดทศนิยมได้ด้วย แต่ต้องประกาศตัวแปรข้างบน
 		# .get() ดึงค่ามาจาก V_expense = StringVar()
 		print('รายการ: {} ราคา : {}'.format(expense,price))
@@ -126,6 +164,11 @@ def save(event=None):
 		dt = stamp.strftime('%y-%m-%d-%H:%M:%S')
 		transactionid = stamp.strftime('%Y%m%d%H%M%f')
 		dt = days[today] + '-' + dt 
+
+		insert_expense(transactionid,dt,expense,float(price),int(quantity),total)
+
+
+
 		with open('savedata.csv','a',encoding='utf-8',newline='') as f:
 			 # with คือสั่งเปิดไฟล์แล้วปิดอัตโนมัติ
 			 # 'a' การบันทึกเรื่อยๆ เพิ่มข้อมูลต่อจากข้อมูลเก่า
@@ -338,8 +381,8 @@ def EditRecord():
 		olddata = alltransaction[str(transactionid)]
 		print('OLD:',olddata)
 		v1 = V_expense.get()
-		v2 = int(V_price.get())
-		v3 = int(V_quantity.get())
+		v2 = float(V_price.get())
+		v3 = float(V_quantity.get())
 		total = v2 * v3
 		newdata = [olddata[0],olddata[1],v1,v2,v3,total]
 		alltransaction[str(transactionid)] = newdata
