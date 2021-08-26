@@ -7,8 +7,21 @@ from datetime import datetime
 
 GUI = Tk() # กำหนดให้ GUI คือ tkinter
 GUI.title("โปรแกรมบันทึกค่าใช้จ่าย v.1.0 By Theeraphan's")
-GUI.geometry('720x800+500+50')
+#GUI.geometry('720x800+500+50')
 # กำหนดขนาด กว้่าง x ยาว +ห่างจากแกน x ของจอ + ห่างจากแกน y ของจอ
+
+w = 720
+h = 800
+
+ws = GUI.winfo_screenwidth() #screen width
+hs = GUI.winfo_screenheight() #screen height
+
+
+x = (ws/2) - (w/2)
+y = (hs/2) - (h/2) 
+
+GUI.geometry(f'{w}x{h}+{x:.0f}+{y:.0f}')
+
 
 # x0 = Button(GUI,text='Hello1')
 # ประกาศตัวแปร x0 = สร้างปุ่มของ GUI ที่ text เเขียนว่า hello
@@ -218,7 +231,7 @@ for h,w in zip(header,headerwidth):
 # ใส่ข้อมูลลงในตาราง
 #resulttable.insert('','end',value=['จันทร์','น้ำดื่ม',30,5,150])
 
-alltransaction = {}
+alltransaction = {} # dictionary
 
 def Update_CSV():
 	with open('savedata.csv','w',newline='',encoding='utf-8') as f: #function writer ต้อง ใส่หลัง ชื่อไฟล์ 'w', write ทับไปเลย
@@ -244,7 +257,8 @@ def DeleteRecord(event=None):
 		data = data['values']
 		transactionid = data[0]
 		#print(transactionid)
-		del alltransaction[str(transactionid)] #เป็นการลบข้อมูล transactionid ใน dictionary
+		del alltransaction[str(transactionid)] 
+		#เป็นการลบข้อมูล transactionid ใน dictionary
 		Update_CSV()
 		update_table()
 	else:
@@ -256,7 +270,7 @@ BDelete.place(x=50,y=700)
 resulttable.bind('<Delete>',DeleteRecord)
 
 
-# update ตาราง
+# update ตาราง # ทำหน้าที่อัพเดตข้อมูลตัวเก่าออกไปแล้วเอาตัวใหม่เข้ามา
 def update_table():
 	resulttable.delete(*resulttable.get_children()) #เป็นการสั่ง delete อัตโนมัติ
 	# for c in resulttable.get_children():
@@ -272,8 +286,102 @@ def update_table():
 	except Exception as e:
 		print('No File')
 		print('ERROR',e)
+ 
+
+########Right Click Menu############
+def EditRecord():
+	POPUP = Toplevel() #คล้ายๆกับ Tk()
+	POPUP.title('Edit Record')
+	#POPUP.geometry('500x400')
+
+	w = 500
+	h = 400
+
+	ws = POPUP.winfo_screenwidth() #screen width
+	hs = POPUP.winfo_screenheight() #screen height
 
 
+	x = (ws/2) - (w/2)
+	y = (hs/2) - (h/2) 
+
+	POPUP.geometry(f'{w}x{h}+{x:.0f}+{y:.0f}')
+
+
+
+	#--------text1--------
+	L = ttk.Label(POPUP,text='รายการค่าใช้จ่าย',font=FONT1).pack()
+	V_expense = StringVar()
+	# StringVar() คือตัวแปรพิเศษสำหรับเก็บข้อมูลใน GUI
+	E1 = ttk.Entry(POPUP,textvariable=V_expense,font=FONT1)
+	E1.pack() # คำสั่งนำไปแปะ
+	#---------------------
+
+	#--------text2--------
+	L = ttk.Label(POPUP,text='ราคา (บาท)',font=FONT1).pack()
+	V_price = StringVar()
+	# StringVar() คือตัวแปรพิเศษสำหรับเก็บข้อมูลใน GUI
+	E2 = ttk.Entry(POPUP,textvariable=V_price,font=FONT1)
+	E2.pack() # คำสั่งนำไปแปะ
+	#---------------------
+
+	#--------text3--------
+	L = ttk.Label(POPUP,text='จำนวน (ชิ้น)',font=FONT1).pack()
+	V_quantity = StringVar()
+	# StringVar() คือตัวแปรพิเศษสำหรับเก็บข้อมูลใน GUI
+	E3 = ttk.Entry(POPUP,textvariable=V_quantity,font=FONT1)
+	E3.pack() # คำสั่งนำไปแปะ
+	#---------------------
+
+	def Edit():
+		# print(transactionid)
+		# print(alltransaction)
+		olddata = alltransaction[str(transactionid)]
+		print('OLD:',olddata)
+		v1 = V_expense.get()
+		v2 = int(V_price.get())
+		v3 = int(V_quantity.get())
+		total = v2 * v3
+		newdata = [olddata[0],olddata[1],v1,v2,v3,total]
+		alltransaction[str(transactionid)] = newdata
+		Update_CSV()
+		update_table()
+		POPUP.destroy() # สั่งปิด popup
+
+
+
+	icon_b1 = PhotoImage(file='B_save.png') 
+
+	x1 = ttk.Button(POPUP,text=f'{"Save": >{10}}',image=icon_b1,compound='left',command = Edit)
+	x1.pack(ipadx=50,ipady=20,pady=20)
+
+	# get data in select record
+	select = resulttable.selection()
+	print(select)
+	data = resulttable.item(select) 
+	data = data['values']
+	print(data)
+	transactionid = data[0]
+	#สั่งเซตค่าเก่าไว้ตรงช่องกรอก
+	V_expense.set(data[2])
+	V_price.set(data[3])
+	V_quantity.set(data[4])
+
+
+
+	POPUP.mainloop()
+
+
+
+rightclick = Menu(GUI,tearoff=0)
+rightclick.add_command(label='Edit',command=EditRecord)
+rightclick.add_command(label='Delete',command=DeleteRecord)
+
+def menupopup(event):
+	#print(event.x_root, event.y_root) # ตำแหน่งที่เราจะใส่เข้าไป
+	rightclick.post(event.x_root,event.y_root)
+
+
+resulttable.bind('<Button-3>',menupopup)
 
 
 
